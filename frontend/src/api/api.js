@@ -35,14 +35,7 @@ export async function request(path, options = {}) {
 /** GET /api/services → list of the services a customer can request a ticket for. */
 export function getServices() {
   // TODO: restore the real call once the backend endpoint is available
-  // return request('/services');
-
-  return mockResponse([
-    { id: 1, code: 'SHIP', name: 'shipping and packets', service_time_minutes: 5, active: 1 },
-    { id: 2, code: 'PAY', name: 'payment service', service_time_minutes: 10, active: 1 },
-    { id: 3, code: 'INFO', name: 'general information', service_time_minutes: 3, active: 1 },
-    { id: 4, code: 'EXTRA', name: 'new service', service_time_minutes: 0, active: 0 },
-  ]);
+  return request('/services');
 }
 
 /** POST /api/tickets → issues a new ticket for the given service. */
