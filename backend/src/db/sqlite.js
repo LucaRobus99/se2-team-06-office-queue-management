@@ -3,8 +3,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
-const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
-
+const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts');
 /**
  * Database connection using Node's built-in SQLite (`node:sqlite`, no extra install).
  * DAOs call `query(sql, params)` → { rows, rowCount }. Placeholders are written `$1, $2…`
