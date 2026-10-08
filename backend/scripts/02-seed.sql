@@ -1,3 +1,5 @@
+-- Sample data (SQLite).
+
 INSERT INTO services (code, name, service_time_minutes, active) VALUES
   ('SHIP', 'shipping and packets', 5, 1),
   ('PAY', 'payment service', 10, 1),

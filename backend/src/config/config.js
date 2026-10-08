@@ -6,5 +6,5 @@ export const config = {
   port: Number(process.env.PORT ?? 8080),
 
   /** SQLite database file. ":memory:" = temporary database in RAM (lost on restart). */
-  sqliteFile: process.env.SQLITE_FILE ?? 'data/oqm.sqlite',
+  sqliteFile: process.env.SQLITE_FILE ?? 'database/database.sqlite',
 };
