@@ -97,3 +97,131 @@ body {
 .back-link:hover {
   text-decoration: underline;
 }
+
+/* ---------- Customer: service selection ---------- */
+
+.service-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  padding: 1.25rem 1rem;
+
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+
+  background-color: white;
+  color: inherit;
+
+  font: inherit;
+  cursor: pointer;
+
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.service-card:hover:not(:disabled) {
+  border-color: #93c5fd;
+}
+
+.service-card:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.service-card.selected {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.service-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.service-card.inactive {
+  border-style: dashed;
+  background-color: #f9fafb;
+  opacity: 1;
+}
+
+.service-card.inactive .service-code,
+.service-card.inactive .service-name {
+  color: #9ca3af;
+}
+
+.service-badge {
+  padding: 0.15rem 0.6rem;
+
+  border-radius: 999px;
+
+  background-color: #e5e7eb;
+  color: #4b5563;
+
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.service-code {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.service-name {
+  color: #4b5563;
+}
+
+.service-name::first-letter {
+  text-transform: uppercase;
+}
+
+.primary-button {
+  width: 100%;
+
+  padding: 1rem;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: #2563eb;
+  color: white;
+
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.primary-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.status-message {
+  color: #4b5563;
+}
+
+.error-message {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+
+  border-radius: 8px;
+
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
