@@ -31,16 +31,8 @@ export function requestTicket(serviceId) {
   //   body: JSON.stringify({ serviceId }),
   // });
 
-  mockTicketId += 1;
-  return mockResponse({
-    id: mockTicketId,
-    serviceId,
-    status: 'WAITING',
-    issuedAt: new Date().toISOString(),
-  });
+  return mockResponse({});
 }
-
-let mockTicketId = 4;
 
 function mockResponse(data, delayMs = 300) {
   return new Promise((resolve) => setTimeout(() => resolve(data), delayMs));
