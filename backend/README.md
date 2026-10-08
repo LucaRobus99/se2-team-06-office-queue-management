@@ -21,7 +21,7 @@ npm run db:reset
 | `npm run dev`      | Start with auto-restart on file changes            |
 | `npm start`        | Start normally                                     |
 | `npm run db:reset` | Delete the database file (recreated on next start) |
-| `npm test`         | All tests (use a temporary in-memory database)     |
+| `npm test`         | Run backend tests with Vitest     |
 
 ## Configuration
 Defaults work out of the box. Override with environment variables (see `.env.example`):
@@ -44,34 +44,32 @@ src/
 ├── config/config.js       settings (port, database file)
 ├── db/sqlite.js           database connection; creates the schema on first start
 ├── routes/                WEB layer: URL → service call → HTTP status/JSON
-│   ├── dummyRoutes.js
 │   └── healthRoutes.js
 ├── services/              SERVICE layer: business rules + validation (no HTTP, no SQL)
-│   └── dummyService.js
 ├── dao/                   DAO layer: the only place with SQL
-│   └── dummyDao.js
 ├── errors/AppError.js     NotFoundError (404), ValidationError (400)
 └── middleware/errorHandler.js   turns errors into JSON responses
 scripts/                        schema + seed SQL scripts
-test/                      service tests (fake DAO), HTTP tests (fake DB), DAO tests on in-memory SQLite
+test/                      backend tests (using in-memory SQLite where appropriate)
 ```
 
 Calls only go downward: `routes → services → dao → database`.
 
 ## Endpoints
-| Method | Path                         | Description                                 |
-|--------|------------------------------|---------------------------------------------|
-| GET    | `/api/health`                | `{"status":"UP","database":"UP"}`           |
-| GET    | `/api/dummies?name=<filter>` | List (optional case-insensitive filter)     |
-| GET    | `/api/dummies/:id`           | One item, 404 if missing                    |
-| POST   | `/api/dummies`               | Create, body `{"name","description"}` → 201 |
-| DELETE | `/api/dummies/:id`           | Delete → 204, 404 if missing                |
+| Method | Path          | Description                       |
+|--------|---------------|-----------------------------------|
+| GET    | `/api/health` | `{"status":"UP","database":"UP"}` |
 
-Errors are JSON: `{"type":"about:blank","title":"Not Found","status":404,"detail":"Dummy 9 not found"}`.
+Other endpoints (including `/api/services` and `/api/tickets`) will be added during the Get Ticket implementation.
+
+Currently, errors are returned as JSON with `type`, `title`, `status` and `detail`. For example, a missing route returns a 404 response. The final API error format will be aligned with the Get Ticket contract when those endpoints are implemented.
 
 ## Adding a new feature (e.g. services offered at the counters)
 1. Add the table to `scripts/01-schema.sql`, optionally seed the new table with sample data in `scripts/02-seed.sql`, then `npm run db:reset`
 2. `src/dao/serviceDao.js` – SQL queries (placeholders `$1, $2…`)
 3. `src/services/serviceService.js` – rules and validation
 4. `src/routes/serviceRoutes.js` – endpoints
-5. Wire them in `src/app.js`: `app.use('/api/services', createServiceRouter(createServiceService(createServiceDao(db))))`
+5. Wire the new router in `src/app.js` using the existing database connection
+6. Add tests in `test/` and run `npm test`
+
+Note: The `services` and `tickets` tables already exist in `db/01-schema.sql`; do not recreate them.
