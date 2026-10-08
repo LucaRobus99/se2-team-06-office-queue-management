@@ -3,7 +3,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
-const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../db');
+const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 /**
  * Database connection using Node's built-in SQLite (`node:sqlite`, no extra install).
