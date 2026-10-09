@@ -11,7 +11,7 @@ npm run dev
 ```
 The API listens on http://localhost:8080. `npm run dev` restarts the server automatically when you save a file.
 
-The first start creates `data/oqm.sqlite` with the tables and sample data from `db/*.sql`. Data stays between restarts. To start again from the sample data, stop the server and run:
+The first start creates `database/database.sqlite` with the tables and sample data from `db/*.sql`. Data stays between restarts. To start again from the sample data, stop the server and run:
 ```
 npm run db:reset
 ```
@@ -27,10 +27,10 @@ npm run db:reset
 Defaults work out of the box. Override with environment variables (see `.env.example`):
 
 - `PORT` – default `8080`
-- `SQLITE_FILE` – default `data/oqm.sqlite` (`:memory:` = temporary database, lost on restart)
+- `SQLITE_FILE` – default `database/database.sqlite` (`:memory:` = temporary database, lost on restart)
 
 ## Database
-- `db/01-schema.sql` creates the tables, `db/02-seed.sql` inserts sample data.
+- `scripts/01-schema.sql` creates the tables, `scripts/02-seed.sql` inserts sample data.
 - They run automatically when the backend starts and the database file has **no tables yet**.
 - After changing a script, run `npm run db:reset` so the database is recreated from it.
 - To look inside the database file, use a free viewer such as [DB Browser for SQLite](https://sqlitebrowser.org/) or a SQLite viewer extension in VS Code.
@@ -49,7 +49,7 @@ src/
 ├── dao/                   DAO layer: the only place with SQL
 ├── errors/AppError.js     NotFoundError (404), ValidationError (400)
 └── middleware/errorHandler.js   turns errors into JSON responses
-db/                        schema + seed SQL scripts
+scripts/                        schema + seed SQL scripts
 test/                      backend tests (using in-memory SQLite where appropriate)
 ```
 
@@ -64,10 +64,12 @@ Other endpoints (including `/api/services` and `/api/tickets`) will be added dur
 
 Currently, errors are returned as JSON with `type`, `title`, `status` and `detail`. For example, a missing route returns a 404 response. The final API error format will be aligned with the Get Ticket contract when those endpoints are implemented.
 
-## Adding a new feature (e.g. GET /api/services)
-The `services` and `tickets` tables already exist in `db/01-schema.sql`; do not recreate them.
-1. `src/dao/serviceDao.js` – SQL queries (placeholders `$1, $2…`)
-2. `src/services/serviceService.js` – rules and validation
-3. `src/routes/serviceRoutes.js` – endpoints
-4. Wire the new router in `src/app.js` using the existing database connection
-5. Add tests in `test/` and run `npm test`
+## Adding a new feature (e.g. services offered at the counters)
+1. Add the table to `scripts/01-schema.sql`, optionally seed the new table with sample data in `scripts/02-seed.sql`, then `npm run db:reset`
+2. `src/dao/serviceDao.js` – SQL queries (placeholders `$1, $2…`)
+3. `src/services/serviceService.js` – rules and validation
+4. `src/routes/serviceRoutes.js` – endpoints
+5. Wire the new router in `src/app.js` using the existing database connection
+6. Add tests in `test/` and run `npm test`
+
+Note: The `services` and `tickets` tables already exist in `db/01-schema.sql`; do not recreate them.

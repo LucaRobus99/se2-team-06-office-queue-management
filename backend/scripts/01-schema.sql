@@ -1,5 +1,8 @@
 PRAGMA foreign_keys = ON ;
 
+-- Database schema (SQLite).
+-- Run automatically by the backend when the SQLite file has no tables yet.
+
 CREATE TABLE IF NOT EXISTS services (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   code TEXT UNIQUE NOT NULL,
