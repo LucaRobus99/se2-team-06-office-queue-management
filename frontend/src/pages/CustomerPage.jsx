@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 
 import ServiceSelector from '../components/ServiceSelector.jsx';
+import TicketResult from '../components/TicketResult.jsx';
 
 /**
  * Customer flow:
- *  1. SELECTING_SERVICE → the customer picks a service and requests a ticket
- *  2. TICKET_ISSUED     → the issued ticket (number + issue time) is shown
+ *  1. SELECTING_SERVICE ? the customer picks a service and requests a ticket
+ *  2. TICKET_ISSUED     ? the issued ticket (number + issue time) is shown
  */
 const STEP = {
   SELECTING_SERVICE: 'SELECTING_SERVICE',
@@ -40,10 +41,11 @@ function CustomerPage() {
         )}
 
         {step === STEP.TICKET_ISSUED && (
-          // TODO: replace with the TicketInfo component (ticket number + issue time)
-          <div>
-            <p>TODO: replace with the TicketInfo component (ticket number + issue time)</p>
-          </div>
+          <TicketResult
+            ticket={ticket}
+            service={service}
+            onDone={handleNewTicket}
+          />
         )}
 
         <Link className="back-link" to="/">
