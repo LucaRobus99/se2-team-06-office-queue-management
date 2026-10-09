@@ -1,3 +1,5 @@
+import { TicketError } from '../errors/AppError.js';
+
 /**
  * Service layer: manages ticket creation and queue information.
  */
@@ -6,13 +8,22 @@ export function createTicketService(serviceDao, ticketDao) {
   return {
     async createTicket(serviceCode) {
 
-      // Find the selected service
-      const code = typeof serviceCode === 'string' ? serviceCode.trim().toUpperCase(): '';
+      // Validate and normalize the service code
+      const code = typeof serviceCode === 'string'? serviceCode.trim().toUpperCase(): '';
+
+      if (!/^[A-Z0-9_-]{1,20}$/.test(code)) {
+        throw new TicketError('ERR-101', 'Invalid service code');
+      }
+
       const service = await serviceDao.findByCode(code);
 
+      if (!service) {
+        throw new TicketError('ERR-100', 'Service not found');
+      }
+
       // Only active services can issue tickets
-      if (!service || service.active !== 1) {
-        throw new Error('Service not found or unavailable');
+      if (service.active !== 1) {
+        throw new TicketError('ERR-102', 'Service is not available');
       }
 
       // Generate the issue timestamp
