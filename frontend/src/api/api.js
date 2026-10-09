@@ -8,11 +8,14 @@ export async function request(path, options = {}) {
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
+
     try {
       const error = await response.json();
-      message = error.detail ?? error.title ?? message;
+      message = error.message ?? error.detail ?? error.title ?? message;
     } catch {
+      // Keep the default message if the response is not valid JSON
     }
+
     throw new Error(message);
   }
 
@@ -23,17 +26,12 @@ export function getServices() {
   return request('/services');
 }
 
-/** POST /api/tickets → issues a new ticket for the given service. */
-export function requestTicket(serviceId) {
-  // TODO: restore the real call once the backend endpoint is available
-  // return request('/tickets', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ serviceId }),
-  // });
-
-  return mockResponse({});
-}
-
-function mockResponse(data, delayMs = 300) {
-  return new Promise((resolve) => setTimeout(() => resolve(data), delayMs));
+/**
+ * Requests a new ticket for the selected service.
+ */
+export function requestTicket(serviceCode) {
+  return request('/tickets', {
+    method: 'POST',
+    body: JSON.stringify({ serviceCode }),
+  });
 }
