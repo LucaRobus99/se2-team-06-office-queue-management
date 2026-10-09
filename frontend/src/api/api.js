@@ -35,3 +35,5 @@ export function requestTicket(serviceCode) {
     body: JSON.stringify({ serviceCode }),
   });
 }
+
+export const createTicket = requestTicket;

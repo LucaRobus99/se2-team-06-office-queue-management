@@ -38,7 +38,7 @@ describe('CustomerPage', () => {
 
     expect(screen.getByRole('heading', { name: /customer area/i })).toBeInTheDocument();
     expect(await screen.findByRole('radiogroup', { name: /available services/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /get another ticket/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /done/i })).not.toBeInTheDocument();
   });
 
   it('switches to the ticket issued state once a ticket is obtained', async () => {
@@ -49,6 +49,24 @@ describe('CustomerPage', () => {
     await waitFor(() => expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /get ticket/i })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /customer area/i })).toBeInTheDocument();
+    expect(screen.getByText('YOUR TICKET')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /done/i })).toBeInTheDocument();
+  });
+
+  it('displays the ticket details and returns to service selection on clicking DONE', async () => {
+    const { user } = renderPage();
+
+    await issueTicketFor(user, 'PAY');
+
+    await waitFor(() => expect(screen.getByText('YOUR TICKET')).toBeInTheDocument());
+    expect(screen.getByText('T-000005')).toBeInTheDocument();
+    expect(screen.getByText(/payment service/i)).toBeInTheDocument();
+
+    const doneButton = screen.getByRole('button', { name: /done/i });
+    await user.click(doneButton);
+
+    await waitFor(() => expect(screen.getByRole('radiogroup', { name: /available services/i })).toBeInTheDocument());
+    expect(screen.queryByText('YOUR TICKET')).not.toBeInTheDocument();
   });
 
   it('stays in the selection state when the ticket request fails', async () => {
@@ -60,9 +78,6 @@ describe('CustomerPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not issue ticket');
     expect(screen.getByRole('radiogroup')).toBeInTheDocument();
   });
-
-  // TODO: when the TicketInfo component is added, test that it shows the ticket number and
-  // issue time, and that "Get another ticket" (if kept) returns to a fresh service selection.
 
   it('keeps the link back to the role selection in both states', async () => {
     const { user } = renderPage();

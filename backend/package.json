@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning src/server.js",
     "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
-    "db:reset": "node -e \"require('fs').rmSync('database/database.sqlite',{force:true});console.log('SQLite database deleted; it is recreated on next start')\"",
+    "db:reset": "node -e \"const f = require('path').resolve(__dirname, 'database/database.sqlite'); require('fs').rmSync(f, {force:true}); console.log('SQLite database deleted:', f); console.log('It will be recreated on next server start.');\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },

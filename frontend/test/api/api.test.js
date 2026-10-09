@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getServices, request, requestTicket } from '../../src/api/api.js';
+import { createTicket, getServices, request, requestTicket } from '../../src/api/api.js';
 
 /** Builds a minimal fetch Response stand-in. */
 function mockFetchResponse({ status = 200, body, jsonThrows = false }) {
@@ -73,6 +73,17 @@ describe('request', () => {
     await expect(request('/tickets')).rejects.toThrow('Bad Request');
   });
 
+  it('throws the backend "message" on error when code and message are present', async () => {
+    fetch.mockResolvedValue(
+      mockFetchResponse({
+        status: 500,
+        body: { code: 'ERR-100', message: 'Service not found' },
+      }),
+    );
+
+    await expect(request('/tickets')).rejects.toThrow('Service not found');
+  });
+
   it('throws a generic message when the error body is not JSON', async () => {
     fetch.mockResolvedValue(mockFetchResponse({ status: 500, jsonThrows: true }));
 
@@ -86,46 +97,75 @@ describe('request', () => {
   });
 });
 
-// These cover the temporary mocked implementations. Once the real calls are restored,
-// replace them with tests that check fetch is called with the right path/method/body.
-describe('getServices (mocked)', () => {
-  it('returns services with the fields the UI needs', async () => {
-    const services = await getServices();
-
-    expect(services.length).toBeGreaterThan(0);
-    for (const service of services) {
-      expect(service).toEqual(
-        expect.objectContaining({ id: expect.any(Number), code: expect.any(String), name: expect.any(String) }),
-      );
-      expect([0, 1]).toContain(service.active);
-    }
+describe('getServices', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
   });
 
-  it('includes both active and inactive services', async () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('calls /api/services with GET and returns services', async () => {
+    const mockServices = [
+      { code: 'SHIP', name: 'Shipping', active: 1 },
+      { code: 'INFO', name: 'Information', active: 0 },
+    ];
+    fetch.mockResolvedValue(mockFetchResponse({ body: mockServices }));
+
     const services = await getServices();
 
-    expect(services.some((s) => s.active === 1)).toBe(true);
-    expect(services.some((s) => s.active === 0)).toBe(true);
+    expect(fetch).toHaveBeenCalledWith('/api/services', {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(services).toEqual(mockServices);
   });
 });
 
-describe('requestTicket (mocked)', () => {
-  it('returns a WAITING ticket for the requested service', async () => {
-    const ticket = await requestTicket(2);
-
-    expect(ticket).toEqual({
-      id: expect.any(Number),
-      serviceId: 2,
-      status: 'WAITING',
-      issuedAt: expect.any(String),
-    });
-    expect(Number.isNaN(Date.parse(ticket.issuedAt))).toBe(false);
+describe('requestTicket and createTicket', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
   });
 
-  it('issues a new, increasing ticket id on every call', async () => {
-    const first = await requestTicket(1);
-    const second = await requestTicket(1);
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
-    expect(second.id).toBe(first.id + 1);
+  it('calls /api/tickets with POST and returns the created ticket response', async () => {
+    const mockTicket = {
+      ticketCode: 'T-000043',
+      serviceName: 'Shipping',
+      issuedAt: '2026-10-08T08:30:00.000Z',
+      peopleAhead: 3,
+    };
+    fetch.mockResolvedValue(mockFetchResponse({ status: 201, body: mockTicket }));
+
+    const ticket = await requestTicket('SHIP');
+
+    expect(fetch).toHaveBeenCalledWith('/api/tickets', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({ serviceCode: 'SHIP' }),
+    });
+    expect(ticket).toEqual(mockTicket);
+  });
+
+  it('createTicket is an alias of requestTicket and works identically', async () => {
+    const mockTicket = {
+      ticketCode: 'T-000044',
+      serviceName: 'Shipping',
+      issuedAt: '2026-10-08T08:35:00.000Z',
+      peopleAhead: 4,
+    };
+    fetch.mockResolvedValue(mockFetchResponse({ status: 201, body: mockTicket }));
+
+    const ticket = await createTicket('SHIP');
+
+    expect(fetch).toHaveBeenCalledWith('/api/tickets', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({ serviceCode: 'SHIP' }),
+    });
+    expect(ticket).toEqual(mockTicket);
   });
 });

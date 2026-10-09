@@ -225,3 +225,88 @@ body {
   background-color: #fef2f2;
   color: #b91c1c;
 }
+
+
+/* ---------- Customer: ticket result ---------- */
+
+.ticket-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.ticket-card {
+  width: 100%;
+  padding: 1.75rem 1.5rem;
+  border: 2px dashed #93c5fd;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ticket-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.ticket-code-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+
+.ticket-hash {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.ticket-code-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #1e40af;
+}
+
+.ticket-service-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.ticket-info-divider {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 0.75rem 0;
+}
+
+.ticket-issued-at {
+  margin: 0;
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.ticket-people-ahead {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.done-button {
+  margin-top: 1.5rem;
+}
