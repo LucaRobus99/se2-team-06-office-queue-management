@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS services (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   code TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
+  description TEXT,
   service_time_minutes INTEGER NOT NULL,
   active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
 );

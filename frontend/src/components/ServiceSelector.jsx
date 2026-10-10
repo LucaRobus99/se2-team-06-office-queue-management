@@ -3,12 +3,12 @@ import { getServices, requestTicket } from '../api/api.js';
 import UiIcon from './UiIcon.jsx';
 import ServiceIllustration from './ServiceIllustration.jsx';
 
-// Visual labels only: the service name, code and availability always come from the API.
+// Visual styling only: the service name, code, description and availability always come from the API.
 const serviceAppearance = {
-  SHIP: { icon: 'package', description: 'Send and collect packages', tone: 'blue' },
-  PAY: { icon: 'card', description: 'Payments and fees', tone: 'green' },
-  INFO: { icon: 'info', description: 'General information and support', tone: 'purple' },
-  EXTRA: { icon: 'file', description: 'Other available services', tone: 'gray' },
+  SHIP: { icon: 'package', tone: 'blue' },
+  PAY: { icon: 'card', tone: 'green' },
+  INFO: { icon: 'info', tone: 'purple' },
+  EXTRA: { icon: 'file', tone: 'gray' },
 };
 
 function ServiceSelector({ onTicketIssued }) {
@@ -73,9 +73,7 @@ function ServiceSelector({ onTicketIssued }) {
         {services.map((service) => {
           const selected = service.code === selectedServiceId;
           const active = Boolean(service.active);
-          const appearance = serviceAppearance[service.code] ?? {
-            icon: 'file', description: 'Office service', tone: 'blue',
-          };
+          const appearance = serviceAppearance[service.code] ?? { icon: 'file', tone: 'blue' };
 
           return (
             <button
@@ -93,7 +91,7 @@ function ServiceSelector({ onTicketIssued }) {
               </span>
               <span className="service-copy">
                 <span className="service-name">{service.name}</span>
-                <span className="service-description">{active ? appearance.description : 'Currently unavailable'}</span>
+                <span className="service-description">{active ? (service.description ?? 'Office service') : 'Currently unavailable'}</span>
                 <span className="service-meta">
                   <span className="service-code">{service.code}</span>
               </span>

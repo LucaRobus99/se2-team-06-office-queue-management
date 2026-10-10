@@ -1,10 +1,10 @@
 -- Sample data (SQLite).
 
-INSERT INTO services (code, name, service_time_minutes, active) VALUES
-  ('SHIP', 'shipping and packets', 5, 1),
-  ('PAY', 'payment service', 10, 1),
-  ('INFO', 'general information', 3, 1),
-  ('EXTRA', 'new service', 0, 0);
+INSERT INTO services (code, name, description, service_time_minutes, active) VALUES
+  ('SHIP', 'shipping and packets', 'Send and collect packages', 5, 1),
+  ('PAY', 'payment service', 'Payments and fees', 10, 1),
+  ('INFO', 'general information', 'General information and support', 3, 1),
+  ('EXTRA', 'new service', 'Other available services', 0, 0);
 
 INSERT INTO tickets (service_id, status, issued_at) VALUES
   (1, 'WAITING', '2026-10-08T08:30:00.000Z'),
