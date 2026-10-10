@@ -6,7 +6,7 @@ export function createServiceDao(db) {
   return {
     async findAll() {
       const { rows } = await db.query(
-        'SELECT code, name, active FROM services ORDER BY name COLLATE NOCASE, code'
+        'SELECT code, name, description, active FROM services ORDER BY name COLLATE NOCASE, code'
       );
 
       return rows;
