@@ -22,7 +22,7 @@ describe('TicketResult', () => {
 
     expect(screen.getByText('YOUR TICKET')).toBeInTheDocument();
     expect(screen.getByText('T-000043')).toBeInTheDocument();
-    expect(screen.getByText('#')).toBeInTheDocument();
+    expect(screen.queryByText('#')).not.toBeInTheDocument();
     expect(screen.getByText('Shipping')).toBeInTheDocument();
     expect(screen.getByText('Issued at 10:30')).toBeInTheDocument();
     expect(screen.getByText('3 people ahead')).toBeInTheDocument();
