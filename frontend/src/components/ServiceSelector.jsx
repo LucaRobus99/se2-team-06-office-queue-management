@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
-
 import { getServices, requestTicket } from '../api/api.js';
+import UiIcon from './UiIcon.jsx';
+import ServiceIllustration from './ServiceIllustration.jsx';
+
+// Visual labels only: the service name, code and availability always come from the API.
+const serviceAppearance = {
+  SHIP: { icon: 'package', description: 'Send and collect packages', tone: 'blue' },
+  PAY: { icon: 'card', description: 'Payments and fees', tone: 'green' },
+  INFO: { icon: 'info', description: 'General information and support', tone: 'purple' },
+  EXTRA: { icon: 'file', description: 'Other available services', tone: 'gray' },
+};
 
 function ServiceSelector({ onTicketIssued }) {
   const [services, setServices] = useState([]);
@@ -52,7 +61,9 @@ function ServiceSelector({ onTicketIssued }) {
 
   return (
     <div className="service-selector">
-      <p className="subtitle">Select the service you need</p>
+      <div className="service-section-heading">
+        <p className="subtitle">Select the service you need</p>
+      </div>
 
       {!services.some((service) => service.active) && !error && (
         <p className="status-message">No services are available at the moment.</p>
@@ -62,6 +73,9 @@ function ServiceSelector({ onTicketIssued }) {
         {services.map((service) => {
           const selected = service.code === selectedServiceId;
           const active = Boolean(service.active);
+          const appearance = serviceAppearance[service.code] ?? {
+            icon: 'file', description: 'Office service', tone: 'blue',
+          };
 
           return (
             <button
@@ -69,14 +83,24 @@ function ServiceSelector({ onTicketIssued }) {
               type="button"
               role="radio"
               aria-checked={selected}
-              className={`service-card${selected ? ' selected' : ''}${active ? '' : ' inactive'}`}
+              className={`service-card service-card--${appearance.tone}${selected ? ' selected' : ''}${active ? '' : ' inactive'}`}
               onClick={() => setSelectedServiceId(service.code)}
               disabled={!active || requesting}
               title={active ? undefined : 'This service is currently unavailable'}
             >
-              <span className="service-code">{service.code}</span>
-              <span className="service-name">{service.name}</span>
-              {!active && <span className="service-badge">Unavailable</span>}
+              <span className="service-icon" aria-hidden="true">
+                <ServiceIllustration name={appearance.icon} />
+              </span>
+              <span className="service-copy">
+                <span className="service-name">{service.name}</span>
+                <span className="service-description">{active ? appearance.description : 'Currently unavailable'}</span>
+                <span className="service-meta">
+                  <span className="service-code">{service.code}</span>
+              </span>
+              </span>
+              <span className="service-arrow" aria-hidden="true">
+                <UiIcon name={selected ? 'check' : active ? 'chevron' : 'alert'} size={21} />
+              </span>
             </button>
           );
         })}
@@ -84,17 +108,20 @@ function ServiceSelector({ onTicketIssued }) {
 
       {error && (
         <p className="error-message" role="alert">
+          <UiIcon name="alert" size={18} />
           {error}
         </p>
       )}
 
       <button
         type="button"
-        className="primary-button"
+        className="primary-button get-ticket-button"
         onClick={handleGetTicket}
         disabled={selectedServiceId === null || requesting}
       >
+        <UiIcon name="ticket" size={20} />
         {requesting ? 'Getting your ticket…' : 'Get ticket'}
+        <UiIcon name="arrowRight" size={19} />
       </button>
     </div>
   );

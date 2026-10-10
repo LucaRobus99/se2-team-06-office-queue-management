@@ -1,3 +1,5 @@
+import UiIcon from './UiIcon.jsx';
+
 function formatTicketCode(id) {
   return `T-${String(id).padStart(6, '0')}`;
 }
@@ -26,34 +28,68 @@ function TicketResult({ ticket, service, onDone }) {
 
   return (
     <div className="ticket-result" data-testid="ticket-result">
+      <div className="ticket-success-celebration" aria-hidden="true">
+        <div className="ticket-success-icon"><UiIcon name="check" size={43} strokeWidth={3.1} /></div>
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+        <span className="ticket-confetti" />
+      </div>
+      <h2>Your ticket has been issued!</h2>
+      <p className="ticket-success-subtitle">Please wait for your turn</p>
+
       <div className="ticket-card">
         <p className="ticket-title">YOUR TICKET</p>
 
         <div className="ticket-code-container" aria-label={`Ticket ${ticketCode}`}>
-          <span className="ticket-hash"># </span>
           <span className="ticket-code-text">{ticketCode}</span>
         </div>
 
-        {serviceName && (
-          <p className="ticket-service-name">{serviceName}</p>
-        )}
-
         <hr className="ticket-info-divider" />
 
-        {formattedTime && (
-          <p className="ticket-issued-at">Issued at {formattedTime}</p>
+        {serviceName && (
+          <div className="ticket-detail-row">
+            <span className="ticket-detail-icon ticket-detail-icon--blue"><UiIcon name="package" size={22} /></span>
+            <span className="ticket-detail-copy">
+              <span className="ticket-detail-label">Service</span>
+              <span className="ticket-service-name">{serviceName}</span>
+            </span>
+          </div>
         )}
 
-        <p className="ticket-people-ahead">{peopleAhead} people ahead</p>
+        {formattedTime && (
+          <div className="ticket-detail-row">
+            <span className="ticket-detail-icon"><UiIcon name="clock" size={22} /></span>
+            <span className="ticket-detail-copy">
+              <span className="ticket-detail-label">Issue time</span>
+              <span className="ticket-issued-at">Issued at {formattedTime}</span>
+            </span>
+          </div>
+        )}
+
+        <div className="ticket-detail-row">
+          <span className="ticket-detail-icon"><UiIcon name="customer" size={22} /></span>
+          <span className="ticket-detail-copy">
+            <span className="ticket-detail-label">Waiting queue</span>
+            <span className="ticket-people-ahead">{peopleAhead} people ahead</span>
+          </span>
+        </div>
       </div>
 
+      <p className="ticket-hint"><UiIcon name="info" size={19} /> Keep your ticket until your turn is called.</p>
       <button
         type="button"
         className="primary-button done-button"
         onClick={onDone}
       >
+        <UiIcon name="check" size={19} />
         DONE
       </button>
+      <p className="ticket-done-caption">Done takes you back to service selection</p>
     </div>
   );
 }
