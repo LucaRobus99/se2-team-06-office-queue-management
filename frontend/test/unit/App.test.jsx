@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getServices } from '../src/api/api.js';
-import App from '../src/App.jsx';
+import { getServices } from '../../src/api/api.js';
+import App from '../../src/App.jsx';
 
-vi.mock('../src/api/api.js', () => ({
+vi.mock('../../src/api/api.js', () => ({
   getServices: vi.fn(),
   requestTicket: vi.fn(),
 }));

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createTicket, getServices, request, requestTicket } from '../../src/api/api.js';
+import { createTicket, getServices, request, requestTicket } from '../../../src/api/api.js';
 
 /** Builds a minimal fetch Response stand-in. */
 function mockFetchResponse({ status = 200, body, jsonThrows = false }) {

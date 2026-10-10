@@ -23,5 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Test coverage reports
+# Test coverage and E2E reports
 coverage
+test-results/
+playwright-report/

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import TicketResult from '../../src/components/TicketResult.jsx';
+import TicketResult from '../../../src/components/TicketResult.jsx';
 
 describe('TicketResult', () => {
   it('returns null if ticket is not provided', () => {

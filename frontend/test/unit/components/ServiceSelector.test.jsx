@@ -2,11 +2,11 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getServices, requestTicket } from '../../src/api/api.js';
-import ServiceSelector from '../../src/components/ServiceSelector.jsx';
+import { getServices, requestTicket } from '../../../src/api/api.js';
+import ServiceSelector from '../../../src/components/ServiceSelector.jsx';
 import { deferred, SERVICES, TICKET } from '../fixtures.js';
 
-vi.mock('../../src/api/api.js', () => ({
+vi.mock('../../../src/api/api.js', () => ({
   getServices: vi.fn(),
   requestTicket: vi.fn(),
 }));
