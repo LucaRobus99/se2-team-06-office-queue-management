@@ -7,12 +7,22 @@ describe('Black Box Test - POST /api/tickets', () => {
   
   it('should create a new ticket and return status 201', async () => {
     const mockDb = {
+      transaction: vi.fn((work) => work()),
       query: vi.fn().mockImplementation(async (sql) => {
-        
+
         if (sql.includes('FROM services WHERE code = ?')) {
           return { rows: [{ id: 1, code: 'SHIP', name: 'shipping and packets', active: 1 }] };
         }
-        
+
+        // No open period yet: a new one is opened
+        if (sql.includes('INSERT INTO sequence_periods')) {
+          return { rows: [{ id: 3, service_id: 1, started_at: new Date().toISOString(), last_value: 0 }] };
+        }
+
+        if (sql.includes('SET last_value = last_value + 1')) {
+          return { rows: [{ last_value: 1 }] };
+        }
+
         if (sql.includes('INSERT INTO tickets')) {
           return { rows: [{ id: 15 }] };
         }
@@ -31,7 +41,7 @@ describe('Black Box Test - POST /api/tickets', () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
-      ticketCode: expect.stringMatching(/^T-\d{6}$/),
+      ticketCode: 'SHIP-001',
       serviceName: 'shipping and packets',
       issuedAt: expect.any(String),
       peopleAhead: 2

@@ -4,27 +4,25 @@
 
 export function createTicketDao(db) {
   return {
-    async insert(serviceId, issuedAt) {
+    async insert(serviceId, periodId, sequenceNumber, issuedAt) {
       const { rows } = await db.query(
-        `INSERT INTO tickets (service_id, status, issued_at)
-         VALUES (?, 'WAITING', ?)
+        `INSERT INTO tickets (service_id, period_id, sequence_number, status, issued_at)
+         VALUES (?, ?, ?, 'WAITING', ?)
          RETURNING id`,
-        [serviceId, issuedAt]
+        [serviceId, periodId, sequenceNumber, issuedAt]
       );
 
       return rows[0].id;
     },
 
-    async countPeopleAhead(serviceId, ticketId, startOfDay, endOfDay) {
+    async countPeopleAhead(periodId, sequenceNumber) {
       const { rows } = await db.query(
         `SELECT COUNT(*) AS peopleAhead
          FROM tickets
-         WHERE service_id = ?
+         WHERE period_id = ?
            AND status = 'WAITING'
-           AND issued_at >= ?
-           AND issued_at < ?
-           AND id < ?`,
-        [serviceId, startOfDay, endOfDay, ticketId]
+           AND sequence_number < ?`,
+        [periodId, sequenceNumber]
       );
 
       return Number(rows[0].peopleAhead);

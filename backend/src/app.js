@@ -7,6 +7,7 @@ import { createServiceService } from './services/serviceService.js';
 import { createServiceRouter } from './routes/serviceRoutes.js';
 
 import { createTicketDao } from './dao/ticketDao.js';
+import { createSequencePeriodDao } from './dao/sequencePeriodDao.js';
 import { createTicketService } from './services/ticketService.js';
 import { createTicketRouter } from './routes/ticketRoutes.js';
 
@@ -30,7 +31,8 @@ export function createApp({ db }) {
 
   // Tickets
   const ticketDao = createTicketDao(db);
-  const ticketService = createTicketService(serviceDao, ticketDao);
+  const periodDao = createSequencePeriodDao(db);
+  const ticketService = createTicketService(serviceDao, ticketDao, periodDao, (work) => db.transaction(work));
   app.use('/api/tickets', createTicketRouter(ticketService));
 
   // Error handling
