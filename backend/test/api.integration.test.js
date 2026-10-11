@@ -52,6 +52,7 @@ describe('Office Queue Management - Backend Integration Tests', () => {
     it('returns 200 with an empty array [] when no services are registered', async () => {
       // Clear tickets and services
       await db.query('DELETE FROM tickets');
+      await db.query('DELETE FROM sequence_periods');
       await db.query('DELETE FROM services');
 
       const response = await request(app).get('/api/services');
@@ -72,15 +73,18 @@ describe('Office Queue Management - Backend Integration Tests', () => {
         serviceName: 'shipping and packets',
         peopleAhead: 0,
       });
-      expect(response.body.ticketCode).toMatch(/^T-\d{6}$/);
+      expect(response.body.ticketCode).toBe('SHIP-001');
       expect(new Date(response.body.issuedAt).toISOString()).toBe(response.body.issuedAt);
 
       // Verify ticket is stored in SQLite
-      const { rows } = await db.query('SELECT * FROM tickets WHERE id = ?', [
-        Number(response.body.ticketCode.replace('T-', '')),
-      ]);
+      const { rows } = await db.query(
+        `SELECT tickets.* FROM tickets JOIN services ON tickets.service_id = services.id
+         WHERE services.code = ? AND tickets.issued_at = ?`,
+        ['SHIP', response.body.issuedAt]
+      );
       expect(rows).toHaveLength(1);
       expect(rows[0].status).toBe('WAITING');
+      expect(rows[0].sequence_number).toBe(1);
     });
 
     it('increments peopleAhead to 1 for the second ticket of the same service on the same day', async () => {
@@ -113,17 +117,31 @@ describe('Office Queue Management - Backend Integration Tests', () => {
       expect(payRes.body.peopleAhead).toBe(0);
     });
 
-    it('generates unique and monotonic ticketCodes across different services', async () => {
-      const res1 = await request(app).post('/api/tickets').send({ serviceCode: 'SHIP' });
-      const res2 = await request(app).post('/api/tickets').send({ serviceCode: 'PAY' });
-      const res3 = await request(app).post('/api/tickets').send({ serviceCode: 'INFO' });
+    it('keeps a separate ticket number sequence for each service, prefixed by the service code', async () => {
+      const codes = [];
+      for (const serviceCode of ['SHIP', 'PAY', 'SHIP', 'INFO', 'SHIP']) {
+        const res = await request(app).post('/api/tickets').send({ serviceCode });
+        expect(res.status).toBe(201);
+        codes.push(res.body.ticketCode);
+      }
 
-      const id1 = Number(res1.body.ticketCode.replace('T-', ''));
-      const id2 = Number(res2.body.ticketCode.replace('T-', ''));
-      const id3 = Number(res3.body.ticketCode.replace('T-', ''));
+      expect(codes).toEqual(['SHIP-001', 'PAY-001', 'SHIP-002', 'INFO-001', 'SHIP-003']);
+    });
 
-      expect(id2).toBeGreaterThan(id1);
-      expect(id3).toBeGreaterThan(id2);
+    it('closes the period of a previous day and restarts the numbering from 1', async () => {
+      // The seed data has an open SHIP period started on 2026-10-08 with 2 tickets
+      const res = await request(app).post('/api/tickets').send({ serviceCode: 'SHIP' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.ticketCode).toBe('SHIP-001');
+
+      const { rows: periods } = await db.query(
+        'SELECT started_at, ended_at, last_value FROM sequence_periods WHERE service_id = 1 ORDER BY id'
+      );
+      expect(periods).toEqual([
+        { started_at: '2026-10-08T08:30:00.000Z', ended_at: res.body.issuedAt, last_value: 2 },
+        { started_at: res.body.issuedAt, ended_at: null, last_value: 1 },
+      ]);
     });
 
     it('does not count tickets from previous days towards today peopleAhead', async () => {
@@ -209,7 +227,7 @@ describe('Office Queue Management - Backend Integration Tests', () => {
 
       expect(res1.status).toBe(201);
       expect(res2.status).toBe(201);
-      expect(res1.body.ticketCode).not.toBe(res2.body.ticketCode);
+      expect([res1.body.ticketCode, res2.body.ticketCode].sort()).toEqual(['PAY-001', 'PAY-002']);
 
       // One of them is first (peopleAhead: 0), the other is second (peopleAhead: 1)
       const peopleAheadValues = [res1.body.peopleAhead, res2.body.peopleAhead].sort();

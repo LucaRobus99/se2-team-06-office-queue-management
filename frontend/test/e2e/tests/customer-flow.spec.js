@@ -42,10 +42,10 @@ test.describe('Office Queue Management - Customer Flow E2E', () => {
     await expect(ticketResult).toBeVisible();
     await expect(page.getByText('YOUR TICKET', { exact: true })).toBeVisible();
 
-    // Check ticket code pattern T-XXXXXX
+    // Check ticket code pattern <SERVICE_CODE>-XXX
     const ticketCodeElement = page.locator('.ticket-code-text');
     await expect(ticketCodeElement).toBeVisible();
-    await expect(ticketCodeElement).toHaveText(/^T-\d{6}$/);
+    await expect(ticketCodeElement).toHaveText(/^[A-Z0-9_-]+-\d{3}$/);
 
     // Check service name and queue count
     await expect(page.locator('.ticket-service-name')).toContainText(/shipping/i);

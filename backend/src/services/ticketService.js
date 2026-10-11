@@ -2,9 +2,12 @@ import { TicketError } from '../errors/AppError.js';
 
 /**
  * Service layer: manages ticket creation and queue information.
+ *
+ * Ticket numbers are a sequence per service and per numbering period: the first ticket
+ * issued on a new day (Europe/Rome) closes the previous period and restarts from 1.
  */
 
-export function createTicketService(serviceDao, ticketDao) {
+export function createTicketService(serviceDao, ticketDao, periodDao, transaction) {
   return {
     async createTicket(serviceCode) {
 
@@ -29,22 +32,24 @@ export function createTicketService(serviceDao, ticketDao) {
       // Generate the issue timestamp
       const issuedAt = new Date().toISOString();
 
-      // Create the ticket and retrieve its unique ID
-      const ticketId = await ticketDao.insert(service.id, issuedAt);
+      // Start of the current day in Europe/Rome: periods opened before it are expired
+      const startOfDay = getRomeStartOfDay(new Date(issuedAt));
 
-      // Calculate the current day's boundaries
-      const { startOfDay, endOfDay } = getRomeDayBounds(new Date(issuedAt));
+      // Take the next number and store the ticket atomically
+      const { sequenceNumber, peopleAhead } = await transaction(async () => {
+        const period = await getCurrentPeriod(periodDao, service.id, issuedAt, startOfDay);
+        const sequenceNumber = await periodDao.nextSequenceNumber(period.id);
 
-      // Count previous waiting tickets for the same service
-      const peopleAhead = await ticketDao.countPeopleAhead(
-        service.id,
-        ticketId,
-        startOfDay,
-        endOfDay
-      );
+        await ticketDao.insert(service.id, period.id, sequenceNumber, issuedAt);
+
+        // Count previous waiting tickets of the same service in the same period
+        const peopleAhead = await ticketDao.countPeopleAhead(period.id, sequenceNumber);
+
+        return { sequenceNumber, peopleAhead };
+      });
 
       return {
-        ticketCode: `T-${String(ticketId).padStart(6, '0')}`,
+        ticketCode: formatTicketCode(service.code, sequenceNumber),
         serviceName: service.name,
         issuedAt,
         peopleAhead,
@@ -54,8 +59,31 @@ export function createTicketService(serviceDao, ticketDao) {
 }
 
 
-// Returns the UTC boundaries of the current day in Europe/Rome.
-function getRomeDayBounds(date) {
+// Returns the open period of the service, starting a new one if there is none
+// or if the open one was started on a previous day.
+async function getCurrentPeriod(periodDao, serviceId, now, startOfDay) {
+  const period = await periodDao.findOpen(serviceId);
+
+  if (period && period.started_at >= startOfDay) {
+    return period;
+  }
+
+  if (period) {
+    await periodDao.close(period.id, now);
+  }
+
+  return periodDao.open(serviceId, now);
+}
+
+
+// e.g. ("SHIP", 7) → "SHIP-007"
+export function formatTicketCode(serviceCode, sequenceNumber) {
+  return `${serviceCode}-${String(sequenceNumber).padStart(3, '0')}`;
+}
+
+
+// Returns the UTC timestamp of the start of the current day in Europe/Rome.
+function getRomeStartOfDay(date) {
   const formatter = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Rome',
     year: 'numeric',
@@ -67,13 +95,7 @@ function getRomeDayBounds(date) {
     .split('-')
     .map(Number);
 
-  const currentDay = new Date(Date.UTC(year, month - 1, day));
-  const nextDay = new Date(Date.UTC(year, month - 1, day + 1));
-
-  return {
-    startOfDay: romeMidnightToUtc(currentDay),
-    endOfDay: romeMidnightToUtc(nextDay),
-  };
+  return romeMidnightToUtc(new Date(Date.UTC(year, month - 1, day)));
 }
 
 

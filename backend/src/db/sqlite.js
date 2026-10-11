@@ -18,6 +18,10 @@ export function createSqliteDb(file) {
   database.exec('PRAGMA foreign_keys = ON');
   initialiseIfEmpty(database);
 
+  // Transactions run one at a time: there is a single connection, so a second BEGIN
+  // while another transaction awaits would fail.
+  let transactionQueue = Promise.resolve();
+
   return {
     async query(sql, params = []) {
       const statement = database.prepare(sql.replace(/\$(\d+)/g, '?$1'));
@@ -27,6 +31,22 @@ export function createSqliteDb(file) {
       }
       const { changes } = statement.run(...params);
       return { rows: [], rowCount: Number(changes) };
+    },
+    /** Runs `work` inside BEGIN IMMEDIATE … COMMIT, rolling back if it throws. */
+    transaction(work) {
+      const run = transactionQueue.then(async () => {
+        database.exec('BEGIN IMMEDIATE');
+        try {
+          const result = await work();
+          database.exec('COMMIT');
+          return result;
+        } catch (err) {
+          database.exec('ROLLBACK');
+          throw err;
+        }
+      });
+      transactionQueue = run.catch(() => {});
+      return run;
     },
     async close() {
       database.close();
